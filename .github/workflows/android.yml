@@ -26,7 +26,7 @@ jobs:
       - name: Install Gradle
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: 8.7  # 或其他版本
+          gradle-version: 8.6  # 或其他版本
 
       - name: Build Debug APK
         run: gradle assembleDebug
