@@ -23,13 +23,20 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Gradle
+      - name: Install required Android components
+        run: |
+          sdkmanager "platforms;android-33"
+          sdkmanager "build-tools;33.0.1"
+          sdkmanager "platform-tools"
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Build with Gradle
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: 8.6  # 或其他版本
-
-      - name: Build Debug APK
-        run: gradle assembleDebug
+          gradle-version: 8.6
+          arguments: assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

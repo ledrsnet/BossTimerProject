@@ -4,6 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        implementation 'com.google.android.material:material:1.9.0' // 使用最新版本
         classpath "com.android.tools.build:gradle:8.1.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21"
     }
