@@ -24,8 +24,8 @@ import kotlin.math.max
 
 data class Boss(
     val id: String = UUID.randomUUID().toString(),
-    var name: String,
-    var intervalMinutes: Int,
+    var name: String = "Boss",
+    var intervalMinutes: Int = 5,
     var remainingMillis: Long? = null,
     var lastStartTimestamp: Long? = null
 ) {
@@ -93,7 +93,6 @@ class TimerEngine(private val scope: CoroutineScope) {
 
 class MainActivity : ComponentActivity() {
 
-    private val gson = Gson()
     private lateinit var repo: BossRepository
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val engine = TimerEngine(scope)
@@ -124,6 +123,7 @@ class MainActivity : ComponentActivity() {
 fun BossTimerApp(initial: MutableList<Boss>, repo: BossRepository, engine: TimerEngine, scope: CoroutineScope) {
     var bosses by remember { mutableStateOf(initial) }
     val nowFlow = remember { mutableStateOf(System.currentTimeMillis()) }
+    var showAdd by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -204,9 +204,7 @@ fun BossTimerApp(initial: MutableList<Boss>, repo: BossRepository, engine: Timer
                             Text("清空计时")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(onClick = {
-                            addBoss("新Boss", 1)
-                        }, modifier = Modifier.height(36.dp)) {
+                        Button(onClick = { showAdd = true }, modifier = Modifier.height(36.dp)) {
                             Text("添加Boss")
                         }
                     }
@@ -243,6 +241,10 @@ fun BossTimerApp(initial: MutableList<Boss>, repo: BossRepository, engine: Timer
             }
         }
     )
+
+    if (showAdd) {
+        AddBossDialog(onAdd = { name, interval -> addBoss(name, interval); showAdd = false }, onCancel = { showAdd = false })
+    }
 }
 
 @Composable
@@ -282,6 +284,33 @@ fun BossRow(
             }
         }
     }
+}
+
+@Composable
+fun AddBossDialog(onAdd: (String, Int) -> Unit, onCancel: () -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var interval by remember { mutableStateOf("5") }
+
+    AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text("添加 Boss") },
+        text = {
+            Column {
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("名称") })
+                OutlinedTextField(value = interval, onValueChange = { interval = it }, label = { Text("间隔(分钟)") })
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val iv = interval.toIntOrNull() ?: 5
+                if (name.isBlank()) return@TextButton
+                onAdd(name.trim(), iv)
+            }) { Text("添加") }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancel) { Text("取消") }
+        }
+    )
 }
 
 fun formatDuration(ms: Long): String {
